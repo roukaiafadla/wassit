@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+  /* Wassit brand palette — adjust freely once you land on real branding */
+  --color-brand-50: #eef7ff;
+  --color-brand-100: #d9edff;
+  --color-brand-500: #1f7ae0;
+  --color-brand-600: #1763b8;
+  --color-brand-700: #124e91;
+  --color-brand-900: #0b3260;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+}

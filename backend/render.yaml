@@ -1,0 +1,28 @@
+# Render "Blueprint" — lets you deploy by pointing Render at this repo
+# (New + -> Blueprint) instead of clicking through manual settings.
+# Docs: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: wassit-backend
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGODB_URI
+        sync: false # set manually in the Render dashboard (Atlas connection string)
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: CLIENT_ORIGIN
+        sync: false # set to your Vercel URL once the frontend is deployed
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: AI_MODEL
+        value: claude-sonnet-4-6
