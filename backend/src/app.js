@@ -4,6 +4,8 @@ import morgan from "morgan";
 import "express-async-errors";
 
 import healthRouter from "./routes/health.js";
+import authRouter from "./routes/auth.js";
+import jobsRouter from "./routes/jobs.js";
 
 export function createApp() {
   const app = express();
@@ -18,10 +20,8 @@ export function createApp() {
   app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
   app.use("/api/health", healthRouter);
-
-  // Feature routers get mounted here as they're built, e.g.:
-  // app.use("/api/auth", authRouter);
-  // app.use("/api/jobs", jobsRouter);
+  app.use("/api/auth", authRouter);
+  app.use("/api/jobs", jobsRouter);
   // app.use("/api/offers", offersRouter);
 
   app.use((req, res) => {
