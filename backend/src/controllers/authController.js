@@ -8,12 +8,17 @@ const PUBLIC_FIELDS =
   "_id name email role location categories coverageRadiusKm verified ratingAvg ratingCount createdAt";
 
 export async function signup(req, res) {
-  const { name, email, password, role, categories, coverageRadiusKm } = req.body;
+  const { name, email, password, role, categories, coverageRadiusKm, latitude, longitude } = req.body;
 
   assertRequest(name && name.trim(), "Name is required");
   assertRequest(isValidEmail(email), "A valid email is required");
   assertRequest(password && password.length >= 8, "Password must be at least 8 characters");
   assertRequest(["client", "provider"].includes(role), "Role must be 'client' or 'provider'");
+
+  const hasLocation = typeof latitude === "number" && typeof longitude === "number";
+  if (latitude !== undefined || longitude !== undefined) {
+    assertRequest(hasLocation, "latitude and longitude must both be numbers if provided");
+  }
 
   const existing = await User.findOne({ email: email.toLowerCase() });
   assertRequest(!existing, "An account with this email already exists");
@@ -30,6 +35,8 @@ export async function signup(req, res) {
     coverageRadiusKm: role === "provider" ? coverageRadiusKm || 10 : undefined,
     // Providers start unverified and go into the admin approval queue (flow 6 in the spec).
     verified: role === "provider" ? false : undefined,
+    // Optional at signup — can also be set/updated later via PATCH /api/users/me/location.
+    location: hasLocation ? { type: "Point", coordinates: [longitude, latitude] } : undefined,
   });
 
   const token = signToken(user);

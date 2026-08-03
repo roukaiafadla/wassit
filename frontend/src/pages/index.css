@@ -69,19 +69,6 @@ h3,
   background-size: 22px 22px;
 }
 
-/* Thin repeating hazard-stripe bar — used sparingly as a single divider,
-   not as a background pattern, so it reads as a signal not decoration. */
-.hazard-stripe {
-  height: 6px;
-  background-image: repeating-linear-gradient(
-    -45deg,
-    var(--color-signal-500) 0,
-    var(--color-signal-500) 10px,
-    var(--color-ink-950) 10px,
-    var(--color-ink-950) 20px
-  );
-}
-
 /* Respect reduced-motion preference. */
 @media (prefers-reduced-motion: reduce) {
   * {

@@ -6,6 +6,9 @@ import "express-async-errors";
 import healthRouter from "./routes/health.js";
 import authRouter from "./routes/auth.js";
 import jobsRouter from "./routes/jobs.js";
+import usersRouter from "./routes/users.js";
+import providersRouter from "./routes/providers.js";
+import adminRouter from "./routes/admin.js";
 
 export function createApp() {
   const app = express();
@@ -22,7 +25,9 @@ export function createApp() {
   app.use("/api/health", healthRouter);
   app.use("/api/auth", authRouter);
   app.use("/api/jobs", jobsRouter);
-  // app.use("/api/offers", offersRouter);
+  app.use("/api/users", usersRouter);
+  app.use("/api/providers", providersRouter);
+  app.use("/api/admin", adminRouter);
 
   app.use((req, res) => {
     res.status(404).json({ error: `Not found: ${req.method} ${req.originalUrl}` });
