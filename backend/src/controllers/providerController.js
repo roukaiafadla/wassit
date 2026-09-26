@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 import User from "../models/User.js";
 import Job from "../models/Job.js";
 import { assertRequest, notFound } from "../utils/validation.js";
@@ -8,7 +10,8 @@ const PUBLIC_FIELDS = {
 };
 
 /**
- * Core geo query, shared by both routes below. Finds verified providers who:
+ * Core geo query, shared by both routes below (and by jobController's
+ * Socket.io broadcast on job creation). Finds verified providers who:
  *   - offer `category`
  *   - are within THEIR OWN coverageRadiusKm of (latitude, longitude)
  *
@@ -17,8 +20,12 @@ const PUBLIC_FIELDS = {
  * $expr to keep only those whose distance is within their own coverage
  * radius — this is why a plain $near/$maxDistance isn't enough: the radius
  * differs per provider, so the cutoff has to be applied per-document.
+ *
+ * The $project is split into three stages on purpose: MongoDB doesn't allow
+ * mixing field exclusion (passwordHash: 0) with a computed field in the same
+ * $project stage.
  */
-async function findNearbyProviders({ latitude, longitude, category }) {
+export async function findNearbyProviders({ latitude, longitude, category }) {
   return User.aggregate([
     {
       $geoNear: {
@@ -65,6 +72,7 @@ export async function nearbyProviders(req, res) {
  * will run before emitting `job:new` to each matched provider's room).
  */
 export async function nearbyProvidersForJob(req, res) {
+  assertRequest(mongoose.Types.ObjectId.isValid(req.params.id), "Invalid job id");
   const job = await Job.findById(req.params.id);
   if (!job) return notFound("Job not found");
 

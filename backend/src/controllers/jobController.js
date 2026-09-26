@@ -1,6 +1,9 @@
 import Job from "../models/Job.js";
 import User from "../models/User.js";
+import mongoose from "mongoose";
 import { assertRequest, notFound, forbidden } from "../utils/validation.js";
+import { findNearbyProviders } from "./providerController.js";
+import { getIO } from "../sockets/index.js";
 
 const URGENCIES = ["low", "medium", "high"];
 
@@ -45,6 +48,25 @@ export async function createJob(req, res) {
   });
 
   res.status(201).json({ job });
+
+  // Broadcast to nearby eligible providers, live. This runs after the
+  // response is already sent — the client doesn't wait on the geo query or
+  // the socket emit, since neither affects whether their job was created.
+  notifyNearbyProviders(job).catch((err) => {
+    console.error("[jobController] Failed to notify nearby providers:", err);
+  });
+}
+
+async function notifyNearbyProviders(job) {
+  const io = getIO();
+  if (!io) return; // sockets not initialized (shouldn't happen, but never crash a request over this)
+
+  const [longitude, latitude] = job.location.coordinates;
+  const providers = await findNearbyProviders({ latitude, longitude, category: job.category });
+
+  for (const provider of providers) {
+    io.to(`user:${provider._id}`).emit("job:new", { job });
+  }
 }
 
 /**
@@ -72,6 +94,7 @@ export async function listJobs(req, res) {
 }
 
 export async function getJob(req, res) {
+  assertRequest(mongoose.Types.ObjectId.isValid(req.params.id), "Invalid job id");
   const job = await Job.findById(req.params.id);
   if (!job) return notFound("Job not found");
 
@@ -86,6 +109,7 @@ export async function getJob(req, res) {
  * PATCH /api/jobs/:id/cancel — client cancels their own open job.
  */
 export async function cancelJob(req, res) {
+  assertRequest(mongoose.Types.ObjectId.isValid(req.params.id), "Invalid job id");
   const job = await Job.findById(req.params.id);
   if (!job) return notFound("Job not found");
   if (job.clientId.toString() !== req.user.id) forbidden("You can only cancel your own jobs");

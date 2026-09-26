@@ -9,6 +9,7 @@ import jobsRouter from "./routes/jobs.js";
 import usersRouter from "./routes/users.js";
 import providersRouter from "./routes/providers.js";
 import adminRouter from "./routes/admin.js";
+import offersRouter from "./routes/offers.js";
 
 export function createApp() {
   const app = express();
@@ -28,6 +29,7 @@ export function createApp() {
   app.use("/api/users", usersRouter);
   app.use("/api/providers", providersRouter);
   app.use("/api/admin", adminRouter);
+  app.use("/api/offers", offersRouter);
 
   app.use((req, res) => {
     res.status(404).json({ error: `Not found: ${req.method} ${req.originalUrl}` });

@@ -56,3 +56,31 @@ export async function listMyJobs() {
   return data.jobs;
 }
 
+export async function getJob(jobId) {
+  const { data } = await api.get(`/api/jobs/${jobId}`);
+  return data.job;
+}
+
+// --- Offers ---
+
+// Client only — full offer list on a job they own. Providers don't get to
+// see competing offers (mirrors the backend's own access rule).
+export async function listOffersForJob(jobId) {
+  const { data } = await api.get(`/api/jobs/${jobId}/offers`);
+  return data.offers;
+}
+
+// Provider only. payload: { jobId, price, etaMinutes }
+export async function createOffer(payload) {
+  const { data } = await api.post("/api/offers", payload);
+  return data.offer;
+}
+
+// Client only — accepts one offer; job -> matched, other offers -> rejected,
+// a conversation is created server-side. Returns all three so the caller
+// doesn't need a follow-up fetch.
+export async function acceptOffer(offerId) {
+  const { data } = await api.patch(`/api/offers/${offerId}/accept`);
+  return data; // { offer, job, conversation }
+}
+

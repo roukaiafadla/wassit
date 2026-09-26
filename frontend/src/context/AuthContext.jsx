@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 import * as api from "../lib/api";
+import { connectSocket, disconnectSocket } from "../lib/socket";
 
 const AuthContext = createContext(null);
 
@@ -26,7 +27,10 @@ export function AuthProvider({ children }) {
 
     api
       .fetchMe()
-      .then(setUser)
+      .then((restoredUser) => {
+        setUser(restoredUser);
+        connectSocket(); // restored session — reconnect real-time too
+      })
       .catch(() => {
         // Token expired or invalid — clear it so the app doesn't keep retrying.
         localStorage.removeItem(TOKEN_KEY);
@@ -38,6 +42,7 @@ export function AuthProvider({ children }) {
     const { token, user: newUser } = await api.signup(payload);
     localStorage.setItem(TOKEN_KEY, token);
     setUser(newUser);
+    connectSocket();
     return newUser;
   }
 
@@ -45,12 +50,14 @@ export function AuthProvider({ children }) {
     const { token, user: loggedInUser } = await api.login(email, password);
     localStorage.setItem(TOKEN_KEY, token);
     setUser(loggedInUser);
+    connectSocket();
     return loggedInUser;
   }
 
   function logout() {
     localStorage.removeItem(TOKEN_KEY);
     setUser(null);
+    disconnectSocket();
   }
 
   return (

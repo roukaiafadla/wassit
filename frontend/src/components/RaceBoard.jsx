@@ -29,26 +29,6 @@ function CheckMark() {
 export default function RaceBoard() {
   return (
     <div className="relative mx-auto max-w-sm select-none overflow-hidden rounded-2xl border border-ink-950/10 bg-white shadow-[0_1px_2px_rgba(11,26,41,0.06),0_16px_32px_-16px_rgba(11,26,41,0.25)]">
-      <style>{`
-        @keyframes lane-fill-in {
-          0%   { width: 0%; }
-          100% { width: var(--fill); }
-        }
-        .lane-fill { animation: lane-fill-in 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
-
-        @keyframes lane-row-in {
-          0%   { opacity: 0; transform: translateX(-6px); }
-          100% { opacity: 1; transform: translateX(0); }
-        }
-        .lane-row { animation: lane-row-in 0.5s ease-out both; }
-
-        @keyframes live-ping {
-          0%   { transform: scale(1); opacity: 0.6; }
-          100% { transform: scale(2.4); opacity: 0; }
-        }
-        .live-ping { animation: live-ping 1.6s ease-out infinite; }
-      `}</style>
-
       {/* Top accent bar — a quiet "this is live" signal instead of a literal race motif */}
       <div className="h-1 w-full bg-gradient-to-r from-signal-400 via-signal-500 to-trust-500" />
 

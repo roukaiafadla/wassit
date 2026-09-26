@@ -13,6 +13,14 @@ export default defineConfig({
         target: "http://localhost:5000",
         changeOrigin: true,
       },
+      // Same idea for the Socket.io connection (src/lib/socket.js defaults to
+      // window.location.origin in dev) — without this, the websocket
+      // handshake would try to hit :5173 instead of the backend on :5000.
+      "/socket.io": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+        ws: true,
+      },
     },
   },
 });
