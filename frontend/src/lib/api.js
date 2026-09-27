@@ -43,6 +43,14 @@ export async function fetchMe() {
   return data.user;
 }
 
+// --- AI ---
+
+// Preview only — does not create a job. payload: { description }
+export async function suggestJob(description) {
+  const { data } = await api.post("/api/ai/suggest-job", { description });
+  return data; // { category, urgency, priceMin, priceMax, source }
+}
+
 // --- Jobs ---
 
 export async function createJob(payload) {
