@@ -1,5 +1,6 @@
 import Job from "../models/Job.js";
 import User from "../models/User.js";
+import Offer from "../models/Offer.js";
 import mongoose from "mongoose";
 import { assertRequest, notFound, forbidden } from "../utils/validation.js";
 import { findNearbyProviders } from "./providerController.js";
@@ -118,4 +119,35 @@ export async function cancelJob(req, res) {
   job.status = "cancelled";
   await job.save();
   res.json({ job });
+}
+
+/**
+ * PATCH /api/jobs/:id/complete - either party (the client who posted the job,
+ * or the provider whose offer was accepted) marks a matched job as completed.
+ * Both parties are notified live so each can be prompted to leave a review.
+ */
+export async function completeJob(req, res) {
+  assertRequest(mongoose.Types.ObjectId.isValid(req.params.id), "Invalid job id");
+  const job = await Job.findById(req.params.id);
+  if (!job) return notFound("Job not found");
+
+  const acceptedOffer = job.acceptedOfferId ? await Offer.findById(job.acceptedOfferId) : null;
+  const providerId = acceptedOffer ? acceptedOffer.providerId.toString() : null;
+
+  const isClient = job.clientId.toString() === req.user.id;
+  const isProvider = providerId === req.user.id;
+  if (!isClient && !isProvider) forbidden("Only the client or the matched provider can complete this job");
+
+  assertRequest(job.status === "matched", "Only matched jobs can be completed");
+
+  job.status = "completed";
+  await job.save();
+  res.json({ job });
+
+  const io = getIO();
+  if (io) {
+    const rooms = [`user:${job.clientId}`];
+    if (providerId) rooms.push(`user:${providerId}`);
+    io.to(rooms).emit("job:completed", { job, completedBy: req.user.id });
+  }
 }

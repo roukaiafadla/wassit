@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { createJob, listJobs, getJob, cancelJob } from "../controllers/jobController.js";
+import { createJob, listJobs, getJob, cancelJob, completeJob } from "../controllers/jobController.js";
 import { nearbyProvidersForJob } from "../controllers/providerController.js";
 import { requireAuth } from "../middleware/auth.js";
 
@@ -13,5 +13,6 @@ router.get("/", listJobs);
 router.get("/:id", getJob);
 router.get("/:id/nearby-providers", nearbyProvidersForJob);
 router.patch("/:id/cancel", cancelJob);
+router.patch("/:id/complete", completeJob);
 
 export default router;
