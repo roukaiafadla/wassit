@@ -1,6 +1,8 @@
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 
+import { registerChatHandlers } from "./chat.js";
+
 let ioInstance = null;
 
 /**
@@ -58,6 +60,9 @@ export function initSockets(httpServer) {
     socket.on("job:unwatch", (jobId) => {
       if (typeof jobId === "string") socket.leave(`job:${jobId}`);
     });
+
+    // Live chat events (join, send, typing, read) are in ./chat.js
+    registerChatHandlers(io, socket);
 
     socket.on("disconnect", () => {
       console.log(`[socket] disconnected: user ${socket.user.id} (${socket.id})`);
