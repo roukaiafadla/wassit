@@ -12,6 +12,7 @@ import adminRouter from "./routes/admin.js";
 import offersRouter from "./routes/offers.js";
 import aiRouter from "./routes/ai.js";
 import conversationsRouter from "./routes/conversations.js";
+import reviewsRouter from "./routes/reviews.js";
 
 export function createApp() {
   const app = express();
@@ -34,6 +35,7 @@ export function createApp() {
   app.use("/api/offers", offersRouter);
   app.use("/api/ai", aiRouter);
   app.use("/api/conversations", conversationsRouter);
+  app.use("/api/reviews", reviewsRouter);
 
   app.use((req, res) => {
     res.status(404).json({ error: `Not found: ${req.method} ${req.originalUrl}` });
