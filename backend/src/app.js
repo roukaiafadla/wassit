@@ -13,6 +13,7 @@ import offersRouter from "./routes/offers.js";
 import aiRouter from "./routes/ai.js";
 import conversationsRouter from "./routes/conversations.js";
 import reviewsRouter from "./routes/reviews.js";
+import adminStatsRouter from "./routes/adminStats.js";
 
 export function createApp() {
   const app = express();
@@ -31,6 +32,7 @@ export function createApp() {
   app.use("/api/jobs", jobsRouter);
   app.use("/api/users", usersRouter);
   app.use("/api/providers", providersRouter);
+  app.use("/api/admin/stats", adminStatsRouter);
   app.use("/api/admin", adminRouter);
   app.use("/api/offers", offersRouter);
   app.use("/api/ai", aiRouter);
