@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import { listPendingProviders, verifyProvider } from "../controllers/adminController.js";
+import { listDisputes, resolveDispute } from "../controllers/adminDisputeController.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 
 const router = Router();
@@ -9,5 +10,8 @@ router.use(requireAuth, requireRole("admin"));
 
 router.get("/providers/pending", listPendingProviders);
 router.patch("/providers/:id/verify", verifyProvider);
+
+router.get("/disputes", listDisputes);
+router.patch("/disputes/:id/resolve", resolveDispute);
 
 export default router;
