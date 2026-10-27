@@ -22,19 +22,28 @@ export default function MyJobs() {
   const [error, setError] = useState("");
   const [justArrivedIds, setJustArrivedIds] = useState(() => new Set());
 
-  useEffect(() => {
+  // --- NEW: Modal & Action State ---
+  const [modalType, setModalType] = useState(null); // "review" | "dispute" | null
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [reason, setReason] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState("");
+
+  const fetchJobs = () => {
+    setLoading(true);
     api
       .listMyJobs()
       .then(setJobs)
       .catch((err) => setError(err.response?.data?.error || "Couldn't load jobs"))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchJobs();
   }, []);
 
-  // Real-time job broadcast (spec section 5.1): a provider's own `user:<id>`
-  // room gets `job:new` the moment a matching nearby job is posted, so new
-  // work shows up here without a refresh — this is the literal "live job
-  // broadcast" half of step 3 (the other half, live offers, lives on the
-  // per-job page this list links out to).
   useEffect(() => {
     if (user?.role !== "provider") return;
 
@@ -46,8 +55,6 @@ export default function MyJobs() {
         return [payload.job, ...prev];
       });
       setJustArrivedIds((prev) => new Set(prev).add(payload.job._id));
-      // Drop the "just arrived" highlight after a few seconds so it reads as
-      // a moment, not a permanent tag.
       setTimeout(() => {
         setJustArrivedIds((prev) => {
           const next = new Set(prev);
@@ -62,6 +69,59 @@ export default function MyJobs() {
   }, [user]);
 
   const heading = user?.role === "provider" ? "Open jobs near you" : "Your jobs";
+
+  // --- NEW: Action Handlers ---
+  const handleComplete = async (job) => {
+    if (!window.confirm("Mark this job as completed? This will trigger a review request for both parties.")) return;
+    try {
+      setActionLoading(true);
+      await api.completeJob(job._id);
+      fetchJobs(); // Refresh the list
+    } catch (err) {
+      alert(err.response?.data?.error || "Failed to complete job");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const openModal = (job, type) => {
+    setSelectedJob(job);
+    setModalType(type);
+    setRating(5);
+    setComment("");
+    setReason("");
+    setActionError("");
+  };
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    try {
+      setActionLoading(true);
+      setActionError("");
+      await api.createReview({ jobId: selectedJob._id, rating: Number(rating), comment });
+      setModalType(null);
+      fetchJobs();
+    } catch (err) {
+      setActionError(err.response?.data?.error || "Failed to submit review");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleSubmitDispute = async (e) => {
+    e.preventDefault();
+    try {
+      setActionLoading(true);
+      setActionError("");
+      await api.createDispute({ jobId: selectedJob._id, reason });
+      setModalType(null);
+      alert("Dispute raised successfully. The admin has been notified.");
+    } catch (err) {
+      setActionError(err.response?.data?.error || "Failed to raise dispute");
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   return (
     <div className="mx-auto max-w-2xl py-8">
@@ -122,6 +182,38 @@ export default function MyJobs() {
                   </Link>
                 )}
               </div>
+              
+              {/* NEW: Action Buttons (Complete, Review, Dispute) */}
+              <div className="mt-4 flex flex-wrap gap-2 border-t border-slate-100 pt-3">
+                {job.status === "matched" && (
+                  <button
+                    onClick={() => handleComplete(job)}
+                    disabled={actionLoading}
+                    className="rounded bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                  >
+                    Mark Completed
+                  </button>
+                )}
+                
+                {job.status === "completed" && (
+                  <button
+                    onClick={() => openModal(job, "review")}
+                    className="rounded bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
+                  >
+                    Leave Review
+                  </button>
+                )}
+
+                {["matched", "completed"].includes(job.status) && (
+                  <button
+                    onClick={() => openModal(job, "dispute")}
+                    className="rounded bg-red-100 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-200"
+                  >
+                    Raise Dispute
+                  </button>
+                )}
+              </div>
+
               {job._id === justCreatedId && (
                 <p className="mt-2 font-mono-data text-xs font-medium text-signal-600">Just posted</p>
               )}
@@ -132,6 +224,75 @@ export default function MyJobs() {
           );
         })}
       </ul>
+
+      {/* --- NEW: Review Modal --- */}
+      {modalType === "review" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl">
+            <h3 className="mb-4 text-lg font-bold text-ink-950">Leave a Review</h3>
+            {actionError && <p className="mb-3 text-sm text-red-600">{actionError}</p>}
+            <form onSubmit={handleSubmitReview}>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Rating (1-5)</label>
+              <input
+                type="number"
+                min="1"
+                max="5"
+                required
+                value={rating}
+                onChange={(e) => setRating(e.target.value)}
+                className="mb-3 w-full rounded border border-slate-300 p-2 text-sm"
+              />
+              <label className="mb-1 block text-sm font-medium text-slate-700">Comment (Optional)</label>
+              <textarea
+                rows="3"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                className="mb-4 w-full rounded border border-slate-300 p-2 text-sm"
+                placeholder="How did it go?"
+              />
+              <div className="flex justify-end gap-2">
+                <button type="button" onClick={() => setModalType(null)} className="px-3 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded">
+                  Cancel
+                </button>
+                <button type="submit" disabled={actionLoading} className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+                  {actionLoading ? "Submitting..." : "Submit Review"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* --- NEW: Dispute Modal --- */}
+      {modalType === "dispute" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl">
+            <h3 className="mb-2 text-lg font-bold text-red-600">Raise a Dispute</h3>
+            <p className="mb-4 text-xs text-slate-500">This alerts the admin and pauses the job until resolved.</p>
+            {actionError && <p className="mb-3 text-sm text-red-600">{actionError}</p>}
+            <form onSubmit={handleSubmitDispute}>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Reason (min 10 chars)</label>
+              <textarea
+                required
+                minLength={10}
+                rows="4"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                className="mb-4 w-full rounded border border-slate-300 p-2 text-sm"
+                placeholder="Explain what went wrong..."
+              />
+              <div className="flex justify-end gap-2">
+                <button type="button" onClick={() => setModalType(null)} className="px-3 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded">
+                  Cancel
+                </button>
+                <button type="submit" disabled={actionLoading} className="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50">
+                  {actionLoading ? "Submitting..." : "Submit Dispute"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
