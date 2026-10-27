@@ -11,7 +11,7 @@ const URGENCIES = ["low", "medium", "high"];
 /**
  * POST /api/jobs — client creates a job.
  *
- * No AI yet (that's build-order step 4): category, urgency, and price range
+ * Defaults: category, urgency, and price range (can be overridden by the AI endpoint before posting)
  * are provided directly by the client for now instead of being inferred from
  * free text. The shape matches what the AI step will eventually fill in, so
  * swapping it in later won't change this route's contract.
