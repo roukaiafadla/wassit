@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: wassit-api
+    runtime: node
+    plan: free
+    region: frankfurt          # pick the region closest to ur vercel region
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    branch: main
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false             # set in dashboard — never in the file
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: AI_MODEL
+        value: gemini-2.5-flash
+      - key: CLIENT_ORIGIN
+        sync: false             # we'll set this to the Vercel URL in Step 5
