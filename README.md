@@ -1,90 +1,236 @@
-<p align="center">
-  <img src="frontend/public/favicon.svg" alt="Wassit logo" width="72">
-</p>
+ <div align="center">
 
-<h1 align="center">Wassit (وسيط)</h1>
+<img src="frontend/public/favicon.svg" alt="Wassit Logo" width="80" height="80" />
 
-<p align="center">
-  Hyperlocal services marketplace — post a job in plain language, nearby
-  verified providers respond live, you pick one and get it done.
-</p>
+# Wassit (وسيط)
+
+**A hyperlocal services marketplace connecting clients with nearby service providers.**
+
+Describe what you need. Get offers from nearby providers. Compare prices and choose the right person for the job.
+
+[Live Application](https://wassit-omega.vercel.app/) · [GitHub Repository](https://github.com/roukaiafadla/wassit)
+
+</div>
 
 ---
 
-## What it does
+## Overview
 
-A client describes a job in a sentence or two — no forms, no category
-picker required. The description is sent to an AI model that suggests a
-category, urgency level, and a fair price range, which the client can
-accept or edit before posting. The job is then broadcast in real time to
-nearby providers, who can submit offers live; the client picks one and the
-job proceeds.
+Wassit (وسيط) makes finding local services simpler. Instead of filling out lengthy forms or browsing through categories, clients describe what they need in their own words. AI helps identify the service category, urgency, and estimated price range, while clients remain in control of the final details.
 
-## Architecture
+Once a job is published, nearby providers receive it in real time and can submit offers with their proposed prices and estimated arrival times. Clients can compare offers, choose a provider, and communicate directly through the platform.
 
-![Wassit system architecture](docs/architecture-diagram.png)
+From job creation to provider selection, Wassit brings service discovery, real-time interaction, and community trust into one place.
 
 ## Features
 
-- **Auth** — JWT-based signup/login with two roles: client and provider
-- **AI-assisted job posting** — free-text description → suggested category,
-  urgency, and price range, via Google's Gemini API (with a keyword-based
-  fallback if the AI call is unavailable, so posting never breaks)
-- **Geospatial matching** — jobs are matched to nearby providers based on
-  location
-- **Real-time job feed** — new jobs are broadcast live to matching
-  providers over Socket.io, no page refresh needed
-- **Offers** — providers submit offers on open jobs; clients see them
-  update live and choose one
+### AI-Assisted Job Posting
+
+- Create jobs using natural-language descriptions.
+- Generate suggested categories, urgency levels, and price ranges with Google Gemini.
+- Review and edit AI suggestions before publishing.
+- Fall back to keyword-based classification when the AI service is unavailable.
+
+### Location-Based Matching
+
+- Connect clients with relevant nearby service providers.
+- Match jobs using location and service category.
+- Deliver relevant job updates without relying on manual refreshes.
+
+### Real-Time Job Feed and Offers
+
+- Broadcast new jobs using Socket.IO.
+- Let providers submit offers with pricing and estimated arrival times.
+- Update incoming offers in real time.
+- Allow clients to compare offers and select their preferred provider.
+
+### Authentication and User Roles
+
+- JWT-based registration and login.
+- Separate client and provider workflows.
+- Role-based access for clients, providers, and administrators.
+
+### Chat and Reviews
+
+- Real-time messaging between clients and selected providers.
+- Typing indicators and read receipts.
+- Reviews and ratings after completed jobs.
+- Updated provider ratings to support trust and accountability.
+
+### Admin Dashboard
+
+- Monitor platform activity and statistics.
+- Verify service providers.
+- Manage users and handle disputes.
+- Receive real-time notifications for relevant administrative events.
+
+## Architecture
+
+<div align="center">
+  <img src="docs/architecture-diagram.png" alt="Wassit system architecture" width="850" />
+</div>
+
+Wassit uses a React frontend backed by a Node.js API, with MongoDB for persistent storage and Socket.IO for real-time communication. Google Gemini powers AI-assisted job analysis, with a keyword-based fallback to keep job creation available when AI requests fail.
 
 ## Screenshots
 
-![Login](docs/screenshots/login.png)
+### Live Job Feed
 
-![Provider signup](docs/screenshots/signup_provider.png)
+<div align="center">
+  <img src="docs/screenshots/live-job-feed.png" alt="Live job feed showing available service requests" width="800" />
+</div>
 
-![Client signup](docs/screenshots/signup_client.png)
+### My Jobs
 
-![Live job feed](docs/screenshots/live-job-feed.png)
+<div align="center">
+  <img src="docs/screenshots/myjobs.png" alt="My Jobs dashboard" width="800" />
+</div>
 
-![My jobs](docs/screenshots/myjobs.png)
+### Login
 
-## Not yet built
+<div align="center">
+  <img src="docs/screenshots/login.png" alt="Wassit login page" width="500" />
+</div>
 
-- In-app chat between client and provider
-- Reviews and ratings
-- Admin dashboard (verification, disputes)
-- Live deployment
+### Registration
 
-## Stack
+<div align="center">
+  <img src="docs/screenshots/signup_client.png" alt="Client registration page" width="400" />
+  <img src="docs/screenshots/signup_provider.png" alt="Provider registration page" width="400" />
+</div>
 
-- **Frontend:** React + Vite + Tailwind
-- **Backend:** Node.js, Express, MongoDB Atlas
-- **Real-time:** Socket.io
-- **Auth:** JWT
-- **AI:** Google Gemini API (free tier heheh)
+## Tech Stack
 
-## Local setup
+| Technology | Role |
+|---|---|
+| React | Frontend UI |
+| Vite | Development server and build tooling |
+| Tailwind CSS | Styling |
+| Node.js | Backend runtime |
+| Express | REST API |
+| MongoDB Atlas | Database |
+| Socket.IO | Real-time communication |
+| JWT | Authentication |
+| Google Gemini API | AI-assisted job analysis |
+| Vercel | Frontend deployment |
+| Render | Backend deployment |
 
-### Backend
+## Getting Started
+
+### Prerequisites
+
+- Node.js and npm
+- Git
+- A MongoDB database or MongoDB Atlas account
+- A Google Gemini API key
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/roukaiafadla/wassit.git
+cd wassit
+```
+
+### 2. Set up the backend
 
 ```bash
 cd backend
 npm install
-cp .env.example .env   # fill in MONGODB_URI, JWT_SECRET, GEMINI_API_KEY
+```
+
+Create a `.env` file based on `backend/.env.example` and configure the required environment variables:
+
+```env
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_secure_jwt_secret
+GEMINI_API_KEY=your_gemini_api_key
+CLIENT_ORIGIN=http://localhost:5173
+```
+
+Use the variable names defined by the project's actual environment configuration.
+
+Start the development server:
+
+```bash
 npm run dev
 ```
 
-Runs on `http://localhost:5000`.
+Backend: `http://localhost:5000`
 
-### Frontend
+### 3. Set up the frontend
+
+Open another terminal from the repository root:
 
 ```bash
 cd frontend
 npm install
-cp .env.example .env
 npm run dev
 ```
 
-Runs on `http://localhost:5173`.
+Frontend: `http://localhost:5173`
 
+The development setup uses Vite's proxy to route API requests to the local backend.
+
+### 4. Create the initial admin account
+
+Run the seed script from the backend directory:
+
+```bash
+cd backend
+npm run seed
+```
+
+The development seed account is:
+
+- Email: `admin@wassit.dev`
+- Password: `admin12345`
+
+Change the default password and secure the account before using any production environment. Never expose seed credentials in a public production deployment.
+
+## Deployment
+
+The application is available at:
+
+**[wassit-omega.vercel.app](https://wassit-omega.vercel.app/)**
+
+| Service | Platform |
+|---|---|
+| Frontend | Vercel |
+| Backend API | Render |
+| Database | MongoDB Atlas |
+
+The frontend and backend are deployed separately, with MongoDB Atlas providing persistent storage.
+
+**Free-tier note:** If the backend uses a Render free instance, it may spin down after inactivity. The first request after a period of inactivity can take longer while the service starts up.
+
+## Security
+
+- Store secrets and API keys in environment variables.
+- Keep `.env` files out of version control.
+- Use a strong JWT secret.
+- Enforce authorization on protected backend routes.
+- Restrict production CORS to trusted frontend origins.
+- Replace default administrative credentials before deployment.
+
+## Contributing
+
+Contributions and suggestions are welcome.
+
+1. Fork the repository.
+2. Create a branch for your changes.
+3. Implement and test your changes.
+4. Open a pull request describing your contribution.
+
+## License
+
+No license has been specified yet. Add a `LICENSE` file if you intend to publish Wassit under an open-source license.
+
+---
+
+<div align="center">
+
+**Wassit — Connecting local needs with local services.**
+
+[Explore the Live Application](https://wassit-omega.vercel.app/)
+
+</div>

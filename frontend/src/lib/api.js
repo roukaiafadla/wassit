@@ -106,3 +106,21 @@ export async function resolveDispute(disputeId, action, note) {
   const { data } = await api.patch(`/api/admin/disputes/${disputeId}/resolve`, { action, note });
   return data.dispute;
 }
+// --- Reviews & Completion ---
+
+export async function completeJob(jobId) {
+  const { data } = await api.patch(`/api/jobs/${jobId}/complete`);
+  return data.job;
+}
+
+export async function createReview(payload) {
+  // payload: { jobId, rating, comment }
+  const { data } = await api.post("/api/reviews", payload);
+  return data.review;
+}
+
+export async function createDispute(payload) {
+  // payload: { jobId, reason }
+  const { data } = await api.post("/api/disputes", payload);
+  return data.dispute;
+}
