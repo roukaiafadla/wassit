@@ -92,3 +92,17 @@ export async function acceptOffer(offerId) {
   return data; // { offer, job, conversation }
 }
 
+// --- Admin ---
+
+// Fetch the disputes queue (defaults to "open" status)
+export async function getAdminDisputes(status = "open", page = 1) {
+  const { data } = await api.get(`/api/admin/disputes?status=${status}&page=${page}`);
+  return data; // { disputes, pagination }
+}
+
+// Resolve or dismiss a dispute
+export async function resolveDispute(disputeId, action, note) {
+  // action must be "resolved" or "dismissed"
+  const { data } = await api.patch(`/api/admin/disputes/${disputeId}/resolve`, { action, note });
+  return data.dispute;
+}

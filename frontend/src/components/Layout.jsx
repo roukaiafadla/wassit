@@ -24,6 +24,17 @@ export default function Layout() {
       <Link to="/jobs/mine" onClick={() => setMenuOpen(false)} className="hover:text-signal-600">
         {user.role === "provider" ? "Open jobs" : "My jobs"}
       </Link>
+      
+      {/* ADD THIS ADMIN LINK HERE */}
+      {user.role === "admin" && (
+        <>
+          <span className="hidden text-ink-300 sm:inline">|</span>
+          <Link to="/admin" onClick={() => setMenuOpen(false)} className="hover:text-signal-600">
+            Admin Dashboard
+          </Link>
+        </>
+      )}
+      
       <span className="hidden text-ink-300 sm:inline">|</span>
       <span className="font-mono-data text-xs text-ink-600">{user.name}</span>
       <button onClick={handleLogout} className="text-left hover:text-signal-600">
