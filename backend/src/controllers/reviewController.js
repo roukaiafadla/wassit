@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 import Job from "../models/Job.js";
-import Offer from "../models/Offer.js";
+import { getJobParticipants } from "../utils/jobParticipants.js";
 import Review from "../models/Review.js";
 import User from "../models/User.js";
 import { assertRequest, notFound, forbidden } from "../utils/validation.js";
@@ -9,12 +9,6 @@ import { getIO } from "../sockets/index.js";
 
 const MAX_COMMENT_LENGTH = 1000;
 
-// The two people on a job: the client who posted it and the provider whose
-// offer was accepted (ids as strings; providerId is null if nothing was accepted).
-async function getJobParticipants(job) {
-  const offer = job.acceptedOfferId ? await Offer.findById(job.acceptedOfferId) : null;
-  return { clientId: job.clientId.toString(), providerId: offer ? offer.providerId.toString() : null };
-}
 
 /**
  * Recomputes a user's ratingAvg / ratingCount from every review they've received.

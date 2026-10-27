@@ -1,17 +1,15 @@
 import Job from "../models/Job.js";
 import User from "../models/User.js";
-import Offer from "../models/Offer.js";
 import mongoose from "mongoose";
 import { assertRequest, notFound, forbidden } from "../utils/validation.js";
 import { findNearbyProviders } from "./providerController.js";
 import { getIO } from "../sockets/index.js";
-
+import { getJobParticipants } from "../utils/jobParticipants.js";
 const URGENCIES = ["low", "medium", "high"];
 
 /**
  * POST /api/jobs — client creates a job.
- *
- * Defaults: category, urgency, and price range (can be overridden by the AI endpoint before posting)
+ 
  * are provided directly by the client for now instead of being inferred from
  * free text. The shape matches what the AI step will eventually fill in, so
  * swapping it in later won't change this route's contract.
@@ -131,10 +129,8 @@ export async function completeJob(req, res) {
   const job = await Job.findById(req.params.id);
   if (!job) return notFound("Job not found");
 
-  const acceptedOffer = job.acceptedOfferId ? await Offer.findById(job.acceptedOfferId) : null;
-  const providerId = acceptedOffer ? acceptedOffer.providerId.toString() : null;
-
-  const isClient = job.clientId.toString() === req.user.id;
+  const { clientId, providerId } = await getJobParticipants(job);
+  const isClient = clientId === req.user.id;
   const isProvider = providerId === req.user.id;
   if (!isClient && !isProvider) forbidden("Only the client or the matched provider can complete this job");
 
